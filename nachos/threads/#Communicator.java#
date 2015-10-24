@@ -4,12 +4,10 @@ import java.util.LinkedList;
 
 import nachos.machine.*;
 
-/*
 public class Communicator {
 	/**
 	 * Allocate a new communicator.
 	 */
-/*
 Lock lock;
 LinkedList<Integer> buffer;
 Condition speaker;
@@ -63,61 +61,6 @@ public int listen() {
     	lock.release();
     	Machine.interrupt().restore(intStatus);
 	    return buffer.poll();
-    }
-*/
-public class Communicator {
-	/**
-	 * Allocate a new communicator.
-	 */
-    Lock lock;
-    int key;
-    int speakerNumber;
-    int listenerNumber;
-    boolean wordReady;
-    Condition speaker;
-    Condition listener;
-	public Communicator() {
-    	lock = new Lock();
-    	speakerNumber=0;
-    	listenerNumber=0;
-    	wordReady=false;
-    	speaker = new Condition(lock);
-    	listener = new Condition(lock);
-    }
-
-    
-	 public void speak(int word) {
-	    	boolean intStatus = Machine.interrupt().disable();
-	       	lock.acquire();
-	    	speakerNumber++;
-	    	while(listenerNumber==0 || wordReady)
-	        {
-	        speaker.sleep();
-	        }
-	    	this.key=word;
-	    	wordReady=true;
-	    	listener.wakeAll();
-	    	speakerNumber--;
-	       lock.release();
-	      Machine.interrupt().restore(intStatus);
-	       return;
-	    }
-    
-public int listen() {
-	boolean intStatus = Machine.interrupt().disable();
-   	lock.acquire();
-	listenerNumber++;
-	while(wordReady==false)
-    {
-    speaker.wakeAll();
-    listener.sleep();
-    }
-	int word = this.key;
-	wordReady=false;
-	listenerNumber--;
-   lock.release();
-   Machine.interrupt().restore(intStatus);
-   return word;
     }
 	
 	public static void selfTest(){

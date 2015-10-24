@@ -52,18 +52,14 @@ public class Alarm {
 	public void timerInterrupt() {
 		boolean status = Machine.interrupt().disable();
 		long currentTime = Machine.timer().getTime();
-		int size = kthreadtimerlist.size();
-        if (size != 0){
-			for (int i = 0; i < size; i++) {
+			for (int i = 0; i < kthreadtimerlist.size();i++) {
 				if (kthreadtimerlist.get(i).getTime() < currentTime  ){
 					KThread thread = kthreadtimerlist.get(i).getThread();
 					thread.ready();
 					kthreadtimerlist.remove(i);
-					size=kthreadtimerlist.size();
-					i = 0;
+					i=0;
 				}
 			}
-        }
 	    KThread.yield();
 		Machine.interrupt().restore(status);
 }
@@ -99,13 +95,29 @@ public class Alarm {
 	            int waitTime = 10000;
 	            System.out.println("Thread calling wait at time:" + time1);
 	            ThreadedKernel.alarm.waitUntil(waitTime);
-	            System.out.println("Thread woken up after:" + (Machine.timer().getTime() - time1));
+	            System.out.println("Thread 1 woken up after:" + (Machine.timer().getTime() - time1));
 	            Lib.assertTrue((Machine.timer().getTime() - time1) >= waitTime, " thread woke up too early.");
 	            
 	        }
 	    });
-	    t1.setName("T1");
+	    t1.setName("T2");
+	   
+	    KThread t2 = new KThread(new Runnable() {
+	        public void run() {
+	            long time2 = Machine.timer().getTime();
+	            int waitTime = 8000;
+	            System.out.println("Thread calling wait at time:" + time2);
+	            ThreadedKernel.alarm.waitUntil(waitTime);
+	            System.out.println("Thread 2 woken up after:" + (Machine.timer().getTime() - time2));
+	            Lib.assertTrue((Machine.timer().getTime() - time2) >= waitTime, " thread woke up too early.");
+	            
+	        }
+	    });
+	    t2.setName("T2");
 	    t1.fork();
+	    t2.fork();
+
 	    t1.join();
+	    t2.join();
 	}
 }
