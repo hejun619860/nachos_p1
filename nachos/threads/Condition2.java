@@ -35,8 +35,7 @@ public class Condition2 {
 		Lib.assertTrue(conditionLock.isHeldByCurrentThread());
 		boolean status=Machine.interrupt().disable();
 		conditionLock.release();
-		KThread thread = KThread.currentThread();
-		waitQueue.waitForAccess(thread);
+		waitQueue.waitForAccess(KThread.currentThread());
 		KThread.sleep();
 
 		conditionLock.acquire();

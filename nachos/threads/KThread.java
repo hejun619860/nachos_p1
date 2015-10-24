@@ -61,7 +61,7 @@ public class KThread {
 			readyQueue = ThreadedKernel.scheduler.newThreadQueue(false);
 			readyQueue.acquire(this);
 			
-			waitQueue = ThreadedKernel.scheduler.newThreadQueue(false);
+		
 
 			currentThread = this;
 			tcb = TCB.currentTCB();
@@ -70,6 +70,7 @@ public class KThread {
 
 			createIdleThread();
 		}
+		joinQueue = ThreadedKernel.scheduler.newThreadQueue(false);
 	}
 
 	/**
@@ -198,7 +199,7 @@ public class KThread {
 		Machine.interrupt().disable();		Machine.autoGrader().finishingCurrentThread();		Lib.assertTrue(toBeDestroyed == null);
 		toBeDestroyed = currentThread;		
 currentThread.status = statusFinished;		
-	   KThread thread = currentThread().waitQueue.nextThread();
+	   KThread thread = currentThread.joinQueue.nextThread();
 		if (thread != null)
 			{
 			thread.ready();
@@ -286,7 +287,7 @@ currentThread.status = statusFinished;
 			
 			boolean status = Machine.interrupt().disable();
 			if (this.status != statusFinished) {
-				waitQueue.waitForAccess(KThread.currentThread());			       
+				this.joinQueue.waitForAccess(KThread.currentThread());			       
 				sleep();
 			}
 			Machine.interrupt().restore(status);
@@ -450,8 +451,8 @@ currentThread.status = statusFinished;
 		@Override
 	        public void run() 
 		{
-		//	if ( thread != null )
-	            //		thread.join();
+			if ( thread != null )
+	            		thread.join();
 
 	           	 for (int i = 0; i < 5; i++)
 	        	{
@@ -510,7 +511,7 @@ currentThread.status = statusFinished;
 
 	private static KThread idleThread = null;
 	
-	private static ThreadQueue waitQueue = null;
+	private ThreadQueue joinQueue = null;
 	
 	//int join_counter=0;
 	private static class InterlockTest {

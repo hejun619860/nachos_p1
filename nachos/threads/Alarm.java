@@ -4,18 +4,20 @@ import nachos.machine.*;
 
 import java.util.LinkedList;
 
-class KThreadTimer {
+
+
+class KThreadTimer{
 	private KThread thread = null;
-	private long waketime = 0;
-public KThreadTimer(KThread thread, long waketime) {
-		this.thread = thread;
-		this.waketime = waketime;
+	private long time = 0;
+	public KThreadTimer(KThread thread, long time){
+		this.thread=thread;
+		this.time=time;
 	}
-public KThread getThread() {
+	public KThread getThread(){
 		return thread;
-}
-public long getWakeTime() {
-		return waketime;
+	}
+	public long getTime(){
+		return time;
 	}
 }
 /**
@@ -32,7 +34,7 @@ public class Alarm {
 	 */
 	
 //	public PriorityQueue<KThreadTimer> sleepingThreads = new PriorityQueue<KThreadTimer>();
-	private LinkedList<KThreadTimer> linkedlist = new LinkedList<KThreadTimer>();
+	private LinkedList<KThreadTimer> kthreadtimerlist = new LinkedList<KThreadTimer>();
 	public Alarm() {
 		Machine.timer().setInterruptHandler(new Runnable() {
 			public void run() {
@@ -49,22 +51,19 @@ public class Alarm {
 	 */
 	public void timerInterrupt() {
 		boolean status = Machine.interrupt().disable();
-		long currenttime = Machine.timer().getTime();
-		int size = linkedlist.size();
-if (size == 0)
-			;
-		else
+		long currentTime = Machine.timer().getTime();
+		int size = kthreadtimerlist.size();
+        if (size != 0){
 			for (int i = 0; i < size; i++) {
-				if (currenttime < linkedlist.get(i).getWakeTime());
-				else {
-					KThread thread = linkedlist.get(i).getThread();
+				if (kthreadtimerlist.get(i).getTime() < currentTime  ){
+					KThread thread = kthreadtimerlist.get(i).getThread();
 					thread.ready();
-					linkedlist.remove(i);
-					size--;
+					kthreadtimerlist.remove(i);
+					size=kthreadtimerlist.size();
 					i = 0;
-					currenttime = Machine.timer().getTime();
 				}
 			}
+        }
 	    KThread.yield();
 		Machine.interrupt().restore(status);
 }
@@ -84,20 +83,9 @@ if (size == 0)
 	public void waitUntil(long x) {
 		boolean status = Machine.interrupt().disable();
 		long waketime = Machine.timer().getTime() + x;
-		KThreadTimer kthreadtimer = new KThreadTimer(KThread.currentThread(), waketime);
-		int size = linkedlist.size();
-		if (size == 0)
-			linkedlist.add(kthreadtimer);
-		else  //order kthreadtimer by increasing order of time
-			for (int i = 0; i < size; i++) {
-				if (waketime < linkedlist.get(i).getWakeTime()) {
-					linkedlist.add(i, kthreadtimer);
-					break;
-				}
-				if (i == size - 1
-						&& waketime >= linkedlist.get(i).getWakeTime())
-					linkedlist.add(i + 1, kthreadtimer);
-			}
+		
+	
+		kthreadtimerlist.add( new KThreadTimer(KThread.currentThread(), waketime) );
 		KThread.sleep();
 		Machine.interrupt().restore(status);
 	}

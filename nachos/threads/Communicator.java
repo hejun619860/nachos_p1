@@ -30,7 +30,7 @@ int listenercounter;
        	lock.acquire();
     	if(listenercounter==0)
         {
-    		speakercounter++;
+    	speakercounter++;
     	buffer.offer(word);
         speaker.sleep();
         listener.wake();
